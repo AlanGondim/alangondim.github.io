@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alan do Nascimento Gondim | Especialista em Processos & Engenheiro de Produção</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#070a10',
+                            card: '#0e1422',
+                            border: '#1a2436',
+                            cyan: '#00f2fe',
+                            blue: '#4facfe',
+                            purple: '#7f00ff',
+                            pink: '#e100ff',
+                            gold: '#fbbf24'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Three.js CDN para os Objetos 3D Interativos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+            font-family: 'Inter', sans-serif;
+            background-color: #070a10;
+            color: #f3f4f6;
+        }
+
+        /* Spotlight dinâmico que segue o mouse */
+        #cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 700px;
+            height: 700px;
+            margin-left: -350px;
+            margin-top: -350px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.16) 0%, rgba(79, 172, 254, 0.1) 32%, rgba(127, 0, 255, 0.06) 60%, transparent 75%);
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 9999;
+            transition: transform 0.06s ease-out, opacity 0.3s ease;
+            mix-blend-mode: screen;
+        }
+
+        /* Card Glassmorphic com borda de gradiente */
+        .glass-card {
+            background: rgba(14, 20, 34, 0.82);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.08), rgba(225, 0, 255, 0.08), transparent);
+            transition: 0.6s;
+            pointer-events: none;
+        }
+
+        .glass-card:hover::before {
+            left: 100%;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 242, 254, 0.45);
+            transform: translateY(-5px);
+            box-shadow: 0 16px 36px -12px rgba(0, 242, 254, 0.22), 0 0 24px rgba(127, 0, 255, 0.18);
+        }
+
+        /* Moldura de perfil com gradiente rotativo contínuo */
+        .rotating-border-wrapper {
+            position: relative;
+            border-radius: 50%;
+            padding: 6px;
+            background: linear-gradient(90deg, #00f2fe, #4facfe, #7f00ff, #e100ff, #00f2fe);
+            background-size: 300% 300%;
+            animation: gradientRotate 5s linear infinite;
+        }
+
+        @keyframes gradientRotate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Texto com efeito de brilho em gradiente */
+        .text-gradient {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 35%, #7f00ff 70%, #e100ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: textShimmer 4s ease infinite alternate;
+        }
+
+        @keyframes textShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* Container 2D para 3D Morphing */
+        .symbol-3d-box {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            perspective: 800px;
+            border-radius: 1rem;
+            background: rgba(7, 10, 16, 0.85);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.5s ease;
+        }
+
+        .symbol-3d-box:hover {
+            border-color: rgba(0, 242, 254, 0.8);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+            transform: scale(1.05);
+        }
+
+        .view-2d {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .view-3d-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100% !important;
+            height: 100% !important;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 3;
+            cursor: grab;
+        }
+
+        .view-3d-canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Ao passar o mouse na caixa ou no card pai, o 2D some e o 3D Three.js se manifesta */
+        .group:hover .view-2d,
+        .symbol-3d-box:hover .view-2d {
+            opacity: 0;
+            transform: scale(0.7) rotate(-10deg);
+        }
+
+        .group:hover .view-3d-canvas,
+        .symbol-3d-box:hover .view-3d-canvas {
+            opacity: 1;
+        }
+
+        .badge-3d-indicator {
+            position: absolute;
+            bottom: 4px;
+            right: 6px;
+            font-size: 9px;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 5px;
+            border-radius: 4px;
+            background: rgba(0, 242, 254, 0.15);
+            color: #00f2fe;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 4;
+        }
+
+        /* Suporte a layout RTL para Árabe */
+        [dir="rtl"] {
+            text-align: right;
+        }
+        [dir="rtl"] .border-l-4 {
+            border-left-width: 0 !important;
+            border-right-width: 4px !important;
+        }
+        [dir="rtl"] .fa-angle-right {
+            transform: rotate(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #070a10; }
+        ::-webkit-scrollbar-thumb { background: #1a2436; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00f2fe; }
+
+        @media print {
+            body { background: #fff !important; color: #000 !important; }
+            #cursor-glow, nav, .no-print, #contact-toast { display: none !important; }
+            .glass-card { background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; box-shadow: none !important; }
+            .text-gradient { -webkit-text-fill-color: #0284c7 !important; }
+        }
+
+        /* Canvas de Fundo Vivo Futurista (PMBOK / Lean / Six Sigma) */
+        #bg-canvas-universe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+        }
+
+        /* Camada de grade HUD sutil */
+        .hud-grid-overlay {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, rgba(0, 242, 254, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 242, 254, 0.025) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Assegura que o conteúdo fique acima do canvas interativo de fundo */
+        nav, header, section, footer {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-[#070a10] text-gray-100 antialiased selection:bg-cyan-500 selection:text-black min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+    <!-- Canvas de Fundo Vivo Futurista: PMBOK, Lean & Six Sigma -->
+    <canvas id="bg-canvas-universe"></canvas>
+    <div class="hud-grid-overlay" aria-hidden="true"></div>
+
+    <!-- Efeito luminoso interativo do mouse -->
+    <div id="cursor-glow" aria-hidden="true"></div>
+
+    <!-- Barra de Navegação Superior Executiva -->
+    <nav class="sticky top-0 z-50 backdrop-blur-md bg-[#070a10]/85 border-b border-gray-800/60 no-print transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
+            
+            <!-- Identificação do Profissional -->
+            <a href="#" class="flex items-center gap-3 group shrink-0">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-400 via-blue-600 to-purple-600 p-[2px] transition-transform group-hover:scale-105 shadow-md shadow-cyan-500/20">
+                    <div class="w-full h-full bg-[#070a10] rounded-[10px] flex items-center justify-center font-black text-cyan-400 text-sm tracking-wider">
+                        AG
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-extrabold text-lg tracking-tight text-white group-hover:text-cyan-400 transition-colors">Alan Gondim</span>
+                    <span class="text-[11px] text-cyan-400/90 font-mono tracking-widest uppercase" data-i18n="nav_role">Especialista em Processos</span>
+                </div>
+            </a>
+
+            <!-- Links de Navegação Suave -->
+            <div class="hidden xl:flex items-center gap-6 text-xs font-semibold tracking-wide text-gray-300">
+                <a href="#resumo" class="hover:text-cyan-400 transition-colors" data-i18n="nav_summary">Resumo</a>
+                <a href="#metricas" class="hover:text-cyan-400 transition-colors" data-i18n="nav_metrics">Métricas</a>
+                <a href="#competencias" class="hover:text-cyan-400 transition-colors" data-i18n="nav_skills">Competências</a>
+                <a href="#experiencia" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5" data-i18n="nav_exp">
+                    <span>Trajetória 3D</span>
+                    <span class="px-1.5 py-0.5 rounded text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">3D Interactive</span>
+                </a>
+                <a href="#formacao" class="hover:text-cyan-400 transition-colors" data-i18n="nav_edu">Formação</a>
+            </div>
+
+            <!-- Botões de Ação & Seletor Multilíngue (8 Idiomas) -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+                <div class="flex items-center gap-1 bg-gray-900/90 p-1 rounded-xl border border-gray-700/80 overflow-x-auto max-w-[280px] sm:max-w-none shadow-inner">
+                    <span class="text-xs px-1 text-cyan-400"><i class="fa-solid fa-globe"></i></span>
+                    <button onclick="mudarIdioma('pt')" id="btn-lang-pt" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500 text-black shadow-xs transition">PT</button>
+                    <button onclick="mudarIdioma('en')" id="btn-lang-en" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">EN</button>
+                    <button onclick="mudarIdioma('es')" id="btn-lang-es" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">ES</button>
+                    <button onclick="mudarIdioma('it')" id="btn-lang-it" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">IT</button>
+                    <button onclick="mudarIdioma('fr')" id="btn-lang-fr" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">FR</button>
+                    <button onclick="mudarIdioma('ar')" id="btn-lang-ar" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">AR</button>
+                    <button onclick="mudarIdioma('ru')" id="btn-lang-ru" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">RU</button>
+                    <button onclick="mudarIdioma('zh')" id="btn-lang-zh" class="lang-btn px-2 py-0.5 rounded text-[11px] font-bold text-gray-300 hover:text-white transition">ZH</button>
+                </div>
+
+                <button onclick="window.print()" class="no-print hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-200 border border-gray-700 hover:border-cyan-400/50 transition-all shadow-sm">
+                    <i class="fa-solid fa-file-pdf text-cyan-400"></i> PDF
+                </button>
+                <a href="https://wa.me/5581987091982?text=Olá%20Alan,%20vi%20seu%20portfolio%20executivo!" target="_blank" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold text-xs shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> <span data-i18n="btn_connect">Conectar</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION COM FOTO CENTRALIZADA E ANEL NEON -->
+    <header id="resumo" class="relative pt-12 pb-16 lg:pt-20 lg:pb-24 overflow-hidden border-b border-gray-800/40">
+        <!-- Luz de fundo ambiente -->
+        <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/12 via-blue-600/10 to-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Hero Esquerda: Headline & Dados Estratégicos -->
+                <div class="lg:col-span-7 flex flex-col items-start space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 text-xs font-semibold tracking-wide shadow-sm">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                        <span data-i18n="badge_availability">Disponível para Liderança & Projetos Estratégicos</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+                        ALAN DO NASCIMENTO <br>
+                        <span class="text-gradient">GONDIM</span>
+                    </h1>
+
+                    <p class="text-xl sm:text-2xl font-bold text-gray-200 flex flex-wrap items-center gap-2 sm:gap-3">
+                        <span data-i18n="hero_title_1">Especialista em Processos</span>
+                        <span class="text-cyan-400">•</span>
+                        <span data-i18n="hero_title_2">Engenheiro de Produção</span>
+                    </p>
+
+                    <p class="text-gray-300 text-base sm:text-lg leading-relaxed font-normal max-w-2xl" data-i18n="hero_bio">
+                        Engenheiro de Produção e Especialista em Processos com sólida trajetória na otimização de fluxos operacionais, eficiência de processos e transformação digital. Experiência de destaque na condução de projetos estratégicos de melhoria contínua, governança de processos e implementação de ecossistemas corporativos de tecnologia (Salesforce/NEXUS, SAP, TOTVS, WCM/Lean Six Sigma).
+                    </p>
+
+                    <!-- Grade de Contatos Rápidos -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full pt-2">
+                        <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-300">
+                            <i class="fa-solid fa-location-dot text-cyan-400 text-lg"></i>
+                            <div class="text-xs">
+                                <span class="block text-gray-500 font-medium" data-i18n="label_location">Localização</span>
+                                <span class="font-semibold text-gray-200">Jaboatão dos Guararapes - PE</span>
+                            </div>
+                        </div>
+
+                        <a href="mailto:adngondim@hotmail.com" class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-300 hover:border-cyan-500/50 transition-colors group">
+                            <i class="fa-solid fa-envelope text-cyan-400 text-lg group-hover:scale-110 transition-transform"></i>
+                            <div class="text-xs overflow-hidden">
+                                <span class="block text-gray-500 font-medium" data-i18n="label_email">E-mail Direto</span>
+                                <span class="font-semibold text-gray-200 truncate block">adngondim@hotmail.com</span>
+                            </div>
+                        </a>
+
+                        <a href="https://linkedin.com/in/adngondim" target="_blank" class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-300 hover:border-cyan-500/50 transition-colors group">
+                            <i class="fa-brands fa-linkedin text-cyan-400 text-lg group-hover:scale-110 transition-transform"></i>
+                            <div class="text-xs">
+                                <span class="block text-gray-500 font-medium">LinkedIn</span>
+                                <span class="font-semibold text-cyan-400">in/adngondim</span>
+                            </div>
+                        </a>
+
+                        <div onclick="copyContactInfo()" class="cursor-pointer flex items-center gap-3 p-3.5 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-300 hover:border-cyan-500/50 transition-colors group">
+                            <i class="fa-solid fa-phone text-cyan-400 text-lg group-hover:scale-110 transition-transform"></i>
+                            <div class="text-xs">
+                                <span class="block text-gray-500 font-medium" data-i18n="label_phone">Telefone / Copiar</span>
+                                <span class="font-semibold text-gray-200">(81) 98709-1982</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Direita: Foto Real Centralizada com Halo Neon -->
+                <div class="lg:col-span-5 flex justify-center lg:justify-end">
+                    <div class="relative group">
+                        <div class="absolute -inset-1.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 rounded-full blur-xl opacity-65 group-hover:opacity-95 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                        
+                        <!-- Wrapper giratório de gradiente ao redor da foto -->
+                        <div class="rotating-border-wrapper w-64 h-64 sm:w-80 sm:h-80 shadow-2xl">
+                            <div class="w-full h-full rounded-full overflow-hidden bg-[#070a10] relative flex items-center justify-center">
+                                <img id="profile-img" 
+                                     src="Alan perfil IN_2.jpeg" 
+                                     alt="Alan do Nascimento Gondim" 
+                                     class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                                     onerror="handleImgFallback(this)" />
+                            </div>
+                        </div>
+
+                        <!-- Badge Flutuante de Certificação -->
+                        <div class="absolute -bottom-4 right-2 sm:right-4 bg-gray-900/95 backdrop-blur-md border border-cyan-500/40 rounded-xl p-3 shadow-xl flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-lg">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] font-mono uppercase text-gray-400">Certificação</span>
+                                <span class="text-xs font-bold text-white">Green Belt Lean Six Sigma</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- SEÇÃO DE IMPACTO MENSURÁVEL / MÉTRICAS -->
+    <section id="metricas" class="py-16 bg-[#090d16] border-b border-gray-800/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400" data-i18n="sec_metrics_sub">Impacto Mensurável</h2>
+                <p class="text-2xl sm:text-3xl font-extrabold text-white mt-1" data-i18n="sec_metrics_title">Resultados & Indicadores de Desempenho</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Métrica 1 -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl font-black text-cyan-400 tracking-tight">+40%</span>
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400"><i class="fa-solid fa-chart-line"></i></div>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="m1_title">Aumento de Produtividade</h3>
+                        <p class="text-xs text-gray-400" data-i18n="m1_desc">Conquistado na montagem de componentes estruturais sob o programa WCM (Prima Sole Magneti Marelli).</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-800/80 text-[11px] font-mono text-cyan-300">Workplace Organization (WO)</div>
+                </div>
+
+                <!-- Métrica 2 -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl font-black text-purple-400 tracking-tight">-30%</span>
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"><i class="fa-solid fa-rotate-left"></i></div>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="m2_title">Eliminação de Retrabalho</h3>
+                        <p class="text-xs text-gray-400" data-i18n="m2_desc">Redesenho do fluxo fabril de transformação de artigos em couro na linha de produção industrial.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-800/80 text-[11px] font-mono text-purple-300">Fluxos de Manufatura</div>
+                </div>
+
+                <!-- Métrica 3 -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl font-black text-blue-400 tracking-tight">&gt;95%</span>
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400"><i class="fa-solid fa-bullseye"></i></div>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="m3_title">Assertividade Operacional</h3>
+                        <p class="text-xs text-gray-400" data-i18n="m3_desc">Alcançado nos leilões de biodiesel Petrobras na TT Work com taxa ZERO de multas.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-800/80 text-[11px] font-mono text-blue-300">Logística de Granéis Líquidos</div>
+                </div>
+
+                <!-- Métrica 4 -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl font-black text-emerald-400 tracking-tight">ZERO</span>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i class="fa-solid fa-shield-halved"></i></div>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="m4_title">Acidentes de Trabalho</h3>
+                        <p class="text-xs text-gray-400" data-i18n="m4_desc">Marca mantida durante a liderança operacional de 88 colaboradores na Gestamp Wind Steel.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-800/80 text-[11px] font-mono text-emerald-300">Segurança Zero Dano</div>
+                </div>
+
+                <!-- Métrica 5 -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl font-black text-amber-400 tracking-tight">-40%</span>
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400"><i class="fa-solid fa-box-open"></i></div>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="m5_title">Redução de Perdas</h3>
+                        <p class="text-xs text-gray-400" data-i18n="m5_desc">Redução nas perdas de materiais no almoxarifado combinada com +17% de ganho de produtividade.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-800/80 text-[11px] font-mono text-amber-300">Kanban & Mizusumashi</div>
+                </div>
+
+                <!-- Métrica 6 -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl font-black text-pink-400 tracking-tight">85%</span>
+                            <div class="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400"><i class="fa-solid fa-gears"></i></div>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="m6_title">Disponibilidade Fabril</h3>
+                        <p class="text-xs text-gray-400" data-i18n="m6_desc">Alcançada na conversão e 70% nas máquinas de papel da Ondunorte, eliminando 95% do retrabalho.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-800/80 text-[11px] font-mono text-pink-300">PCP & Gestão ERP</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPETÊNCIAS & CONHECIMENTOS CHAVE -->
+    <section id="competencias" class="py-16 lg:py-24 border-b border-gray-800/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <h2 class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400" data-i18n="sec_skills_sub">Saber Fazer & Domínio</h2>
+                    <p class="text-3xl font-extrabold text-white mt-1" data-i18n="sec_skills_title">Competências & Conhecimentos Chave</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-sitemap"></i></div>
+                    <h3 class="text-lg font-bold text-white mb-2" data-i18n="sk1_title">Gestão de Processos (BPM)</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed" data-i18n="sk1_desc">Mapeamento End-to-End, Modelagem de Fluxos, Indicadores de Desempenho (KPIs), Governança e Padronização.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-laptop-code"></i></div>
+                    <h3 class="text-lg font-bold text-white mb-2" data-i18n="sk2_title">Transformação Digital</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed" data-i18n="sk2_desc">Salesforce (Projeto NEXUS), SAP, TOTVS, MES e Pacote MS Office Avançado.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-gears"></i></div>
+                    <h3 class="text-lg font-bold text-white mb-2" data-i18n="sk3_title">Melhoria Contínua & Lean</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed" data-i18n="sk3_desc">Lean Six Sigma (Green Belt), WCM, TPM, Kaizen, Kanban, 5S e Matriz de Riscos.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-users-gear"></i></div>
+                    <h3 class="text-lg font-bold text-white mb-2" data-i18n="sk4_title">Projetos & Pessoas</h3>
+                    <p class="text-xs text-gray-300 leading-relaxed" data-i18n="sk4_desc">Metodologias Ágeis, PMBOK (Práticas PMI), Liderança de Equipes e Gestão da Mudança.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRAJETÓRIA PROFISSIONAL COM TRANSFORMAÇÃO 2D -> 3D THREE.JS -->
+    <section id="experiencia" class="py-16 lg:py-24 bg-[#090d16] border-b border-gray-800/40 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-semibold mb-2">
+                        <i class="fa-solid fa-cube text-cyan-400 animate-spin"></i>
+                        <span>Interatividade 3D Imersiva</span>
+                    </div>
+                    <h2 class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400" data-i18n="sec_exp_sub">Histórico Profissional</h2>
+                    <p class="text-3xl font-extrabold text-white mt-1" data-i18n="sec_exp_title">Trajetória e Atuação Técnica</p>
+                </div>
+                <p class="text-xs font-mono text-gray-400 mt-3 md:mt-0 flex items-center gap-2">
+                    <i class="fa-solid fa-hand-pointer text-cyan-400 animate-bounce"></i>
+                    <span>Passe o mouse sobre os blocos para ativar os modelos 3D dos segmentos</span>
+                </p>
+            </div>
+
+            <!-- Lista da Linha do Tempo -->
+            <div class="space-y-8">
+
+                <!-- 1. MV Sistemas (Gestão Hospitalar / TI em Saúde) -->
+                <div class="glass-card p-6 sm:p-8 rounded-2xl group flex flex-col md:flex-row items-center gap-6" data-experience="mv">
+                    <!-- Caixa de Transformação 2D para 3D -->
+                    <div class="symbol-3d-box" id="box-mv">
+                        <div class="view-2d">
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-1 shadow-inner">
+                                <i class="fa-solid fa-hospital"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-cyan-300 font-bold uppercase">Digital Health</span>
+                            <span class="text-[9px] text-gray-400">Passe o mouse</span>
+                        </div>
+                        <canvas class="view-3d-canvas" id="canvas-mv"></canvas>
+                        <span class="badge-3d-indicator">3D Hologram</span>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono text-cyan-400 font-bold">Março 2022 – Presente</span>
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">Saúde Digital & TI</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">MV Sistemas — <span class="text-cyan-400 font-bold text-lg">Analista de Processos Sênior</span></h3>
+                        <p class="text-xs text-gray-300 mt-2 leading-relaxed" data-i18n="exp1_desc">
+                            Revisão, otimização e governança de processos operacionais e de negócios da companhia. Atuação como Usuário-Chave (Key User) na Central de Implantação do Projeto NEXUS (Salesforce). Mapeamento de jornadas de clientes, mitigação de gargalos e padronização operacional.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Consultor Autônomo (Engenharia de Processos & Multisetorial) -->
+                <div class="glass-card p-6 sm:p-8 rounded-2xl group flex flex-col md:flex-row items-center gap-6" data-experience="consultoria">
+                    <div class="symbol-3d-box" id="box-consultoria">
+                        <div class="view-2d">
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl mb-1 shadow-inner">
+                                <i class="fa-solid fa-gears"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-purple-300 font-bold uppercase">Multisetorial</span>
+                            <span class="text-[9px] text-gray-400">Passe o mouse</span>
+                        </div>
+                        <canvas class="view-3d-canvas" id="canvas-consultoria"></canvas>
+                        <span class="badge-3d-indicator">3D Gears</span>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono text-purple-400 font-bold">Maio 2015 – Fevereiro 2022</span>
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-800 font-mono">Consultoria de Gestão</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">Consultor Autônomo — <span class="text-purple-400 font-bold text-lg">Consultor de Processos & Operações</span></h3>
+                        <p class="text-xs text-gray-300 mt-2 leading-relaxed" data-i18n="exp2_desc">
+                            Estruturação e implantação de gestão de materiais em Construção Civil. Mapeamento de fluxos de decisão e indicadores em Serviços/Tecnologia. Redesenho fabril em Indústria de Calçados/Couro eliminando 30% de retrabalho na linha produtiva.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3. TT Work (Derivados de Petróleo & Biocombustíveis) -->
+                <div class="glass-card p-6 sm:p-8 rounded-2xl group flex flex-col md:flex-row items-center gap-6" data-experience="ttwork">
+                    <div class="symbol-3d-box" id="box-ttwork">
+                        <div class="view-2d">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mb-1 shadow-inner">
+                                <i class="fa-solid fa-oil-well"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-blue-300 font-bold uppercase">Petróleo & Granéis</span>
+                            <span class="text-[9px] text-gray-400">Passe o mouse</span>
+                        </div>
+                        <canvas class="view-3d-canvas" id="canvas-ttwork"></canvas>
+                        <span class="badge-3d-indicator">3D Oil Tank</span>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono text-blue-400 font-bold">Dezembro 2016 – Agosto 2018</span>
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-800 font-mono">Energia & Combustíveis</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">TT Work — <span class="text-blue-400 font-bold text-lg">Analista de Planejamento Sênior</span></h3>
+                        <p class="text-xs text-gray-300 mt-2 leading-relaxed" data-i18n="exp3_desc">
+                            Gestão de estoques e orquestração logística de combustíveis e biocombustíveis. Arremate em leilões de biodiesel Petrobras com mais de 95% de assertividade e taxa ZERO de multas por não retirada de produto.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 4. Prima Sole Magneti Marelli (Indústria Automotiva / WCM) -->
+                <div class="glass-card p-6 sm:p-8 rounded-2xl group flex flex-col md:flex-row items-center gap-6" data-experience="marelli">
+                    <div class="symbol-3d-box" id="box-marelli">
+                        <div class="view-2d">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-1 shadow-inner">
+                                <i class="fa-solid fa-car-side"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-amber-300 font-bold uppercase">Automotivo WCM</span>
+                            <span class="text-[9px] text-gray-400">Passe o mouse</span>
+                        </div>
+                        <canvas class="view-3d-canvas" id="canvas-marelli"></canvas>
+                        <span class="badge-3d-indicator">3D Alloy Wheel</span>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono text-amber-400 font-bold">Junho 2014 – Julho 2015</span>
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800 font-mono">Indústria Automotiva</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">Prima Sole Magneti Marelli — <span class="text-amber-400 font-bold text-lg">Supervisor de Produção</span></h3>
+                        <p class="text-xs text-gray-300 mt-2 leading-relaxed" data-i18n="exp4_desc">
+                            Liderança de 100 colaboradores sob o programa World Class Manufacturing (WCM). Aumento de 40% na produtividade e redução de 25% no índice de refugo. Implementação de fluxos Milk Run, Just-in-Sequence (JIS) e JIT.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 5. Gestamp Wind Steel (Metalúrgica / Energia Eólica) -->
+                <div class="glass-card p-6 sm:p-8 rounded-2xl group flex flex-col md:flex-row items-center gap-6" data-experience="gestamp">
+                    <div class="symbol-3d-box" id="box-gestamp">
+                        <div class="view-2d">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-1 shadow-inner">
+                                <i class="fa-solid fa-wind"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-emerald-300 font-bold uppercase">Energia Eólica</span>
+                            <span class="text-[9px] text-gray-400">Passe o mouse</span>
+                        </div>
+                        <canvas class="view-3d-canvas" id="canvas-gestamp"></canvas>
+                        <span class="badge-3d-indicator">3D Turbine</span>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono text-emerald-400 font-bold">Abril 2013 – Abril 2014</span>
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">Metalúrgica & Eólica</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">Gestamp Wind Steel — <span class="text-emerald-400 font-bold text-lg">Supervisor de Produção</span></h3>
+                        <p class="text-xs text-gray-300 mt-2 leading-relaxed" data-i18n="exp5_desc">
+                            Gestão operacional de 88 colaboradores. Implementação de Kanban e Mizusumashi, resultando em 17% de ganho de produtividade e -40% em perdas de materiais. Conquista de marca histórica de ZERO acidentes de trabalho.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 6. Ondunorte S/A (Papelão, Embalagens & Celulose) -->
+                <div class="glass-card p-6 sm:p-8 rounded-2xl group flex flex-col md:flex-row items-center gap-6" data-experience="ondunorte">
+                    <div class="symbol-3d-box" id="box-ondunorte">
+                        <div class="view-2d">
+                            <div class="w-12 h-12 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-2xl mb-1 shadow-inner">
+                                <i class="fa-solid fa-box"></i>
+                            </div>
+                            <span class="text-[10px] font-mono text-pink-300 font-bold uppercase">Papelão & Celulose</span>
+                            <span class="text-[9px] text-gray-400">Passe o mouse</span>
+                        </div>
+                        <canvas class="view-3d-canvas" id="canvas-ondunorte"></canvas>
+                        <span class="badge-3d-indicator">3D Package</span>
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono text-pink-400 font-bold">Dezembro 2010 – Novembro 2012</span>
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-950 text-pink-300 border border-pink-800 font-mono">Papel & Embalagens</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">Ondunorte S/A — <span class="text-pink-400 font-bold text-lg">Coordenador de PCP e Materiais</span></h3>
+                        <p class="text-xs text-gray-300 mt-2 leading-relaxed" data-i18n="exp6_desc">
+                            Coordenação de equipes de PCP, estoques e auditoria do ERP. Elevação da disponibilidade fabril para 85% na conversão e 70% nas máquinas de papel. Redesenho de recebimento físico eliminando 95% do retrabalho interno.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMAÇÃO ACADÊMICA & CERTIFICAÇÕES -->
+    <section id="formacao" class="py-16 lg:py-24 border-b border-gray-800/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-10">
+                <h2 class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400" data-i18n="sec_edu_sub">Qualificação Profissional</h2>
+                <p class="text-3xl font-extrabold text-white mt-1" data-i18n="sec_edu_title">Formação Acadêmica & Certificações</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-cyan-400">
+                    <h3 class="text-base font-bold text-white">CBPP® (Certified Business Process Professional)</h3>
+                    <p class="text-xs text-gray-400 mt-1" data-i18n="edu1_desc">ABPMP International — Em preparação (Previsão 2027)</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-blue-400">
+                    <h3 class="text-base font-bold text-white">MBA em Gestão de Projetos</h3>
+                    <p class="text-xs text-gray-400 mt-1">Universidade Federal de Pernambuco (UFPE)</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-purple-400">
+                    <h3 class="text-base font-bold text-white">Bacharelado em Engenharia de Produção</h3>
+                    <p class="text-xs text-gray-400 mt-1">Wyden Educacional</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-green-400">
+                    <h3 class="text-base font-bold text-white">Green Belt Lean Six Sigma</h3>
+                    <p class="text-xs text-gray-400 mt-1">Expertise Qualificação & Consultoria</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-amber-400">
+                    <h3 class="text-base font-bold text-white">Capacitação Internacional em WCM</h3>
+                    <p class="text-xs text-gray-400 mt-1">Prima Sole (Oderzo, Itália)</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-pink-400">
+                    <h3 class="text-base font-bold text-white">Inglês Profissional Fluente</h3>
+                    <p class="text-xs text-gray-400 mt-1">Sociedade Cultural Brasil-Estados Unidos / UpTime</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RODAPÉ EXECUTIVO -->
+    <footer class="py-12 bg-[#05070c] no-print border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+            <h2 class="text-2xl font-black text-white" data-i18n="footer_title">Pronto para Elevar a Eficiência dos Seus Processos?</h2>
+            <p class="text-gray-400 text-sm max-w-xl mx-auto" data-i18n="footer_desc">
+                Entre em contato para discutir oportunidades de liderança de processos, governança operacional ou projetos de transformação digital.
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+                <a href="https://wa.me/5581987091982" target="_blank" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold text-sm shadow-xl shadow-cyan-500/20 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp
+                </a>
+                <a href="mailto:adngondim@hotmail.com" class="px-6 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-bold text-sm transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-cyan-400"></i> E-mail
+                </a>
+                <a href="https://linkedin.com/in/adngondim" target="_blank" class="px-6 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-bold text-sm transition-all flex items-center gap-2">
+                    <i class="fa-brands fa-linkedin text-cyan-400"></i> LinkedIn
+                </a>
+            </div>
+
+            <div class="pt-8 border-t border-gray-900 text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
+                <span>© <span id="year"></span> Alan do Nascimento Gondim. Todos os direitos reservados.</span>
+                <span>Interatividade 3D em Three.js & Tailwind</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notificação Flutuante de Cópia -->
+    <div id="contact-toast" class="fixed bottom-5 right-5 z-50 bg-cyan-950 border border-cyan-500 text-cyan-200 text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 opacity-0 pointer-events-none transition-opacity duration-300">
+        <i class="fa-solid fa-circle-check text-cyan-400"></i>
+        <span data-i18n="toast_copied">Informações de contato copiadas!</span>
+    </div>
+
+    <!-- SCRIPTS: INTERATIVIDADE THREE.JS & DICIONÁRIO MULTILÍNGUE -->
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // 1. Efeito Mouse Follower Glow
+        const glow = document.getElementById('cursor-glow');
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let glowX = mouseX, glowY = mouseY;
+        window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        function animateGlow() {
+            glowX += (mouseX - glowX) * 0.15;
+            glowY += (mouseY - glowY) * 0.15;
+            glow.style.transform = `translate3d(${glowX}px, ${glowY}px, 0)`;
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+
+        // 2. Mecanismo de Imagem Real com Fallback SVG Profissional
+        function handleImgFallback(img) {
+            if (!img.dataset.tried1) {
+                img.dataset.tried1 = "true";
+                img.src = "Alan perfil IN.jpeg";
+                return;
+            }
+            if (!img.dataset.tried2) {
+                img.dataset.tried2 = "true";
+                img.src = "Alan.jpeg";
+                return;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = 400; canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 400, 400);
+            grad.addColorStop(0, '#00f2fe'); grad.addColorStop(1, '#7f00ff');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, 400, 400);
+            ctx.fillStyle = '#070a10';
+            ctx.beginPath(); ctx.arc(200, 150, 75, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(200, 390, 150, 0, Math.PI * 2); ctx.fill();
+            img.src = canvas.toDataURL();
+            img.onerror = null;
+        }
+
+        // 3. Copiar dados para Área de Transferência
+        function copyContactInfo() {
+            const textToCopy = "Alan do Nascimento Gondim | Tel: (81) 98709-1982 | Email: adngondim@hotmail.com | LinkedIn: linkedin.com/in/adngondim";
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy);
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+            const toast = document.getElementById('contact-toast');
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0', 'pointer-events-none'); }, 3000);
+        }
+
+        // 4. BACKGROUND VIVO FUTURÍSTICO: PMBOK, LEAN & SIX SIGMA
+        function initFuturisticBackground() {
+            const canvas = document.getElementById('bg-canvas-universe');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            // Partículas de constelação digital conectada
+            const particleCount = 45;
+            const particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.45,
+                    vy: (Math.random() - 0.5) * 0.45,
+                    radius: Math.random() * 2 + 1,
+                    color: Math.random() > 0.5 ? '#00f2fe' : '#7f00ff'
+                });
+            }
+
+            // Elementos simbólicos flutuantes neon: PMBOK, Lean & Six Sigma
+            const symbols = [
+                { type: 'sigma', x: width * 0.15, y: height * 0.25, vx: 0.18, vy: 0.12, rot: 0, rotSpeed: 0.003, scale: 1.1, color: '#00f2fe' },
+                { type: 'triangle', x: width * 0.85, y: height * 0.2, vx: -0.15, vy: 0.15, rot: 0, rotSpeed: 0.004, scale: 1.0, color: '#fbbf24' }, // Triângulo de Ferro PMBOK
+                { type: 'gauss', x: width * 0.78, y: height * 0.65, vx: -0.12, vy: -0.1, rot: 0, rotSpeed: 0.002, scale: 1.2, color: '#e100ff' }, // Curva Normal 6σ
+                { type: 'kanban', x: width * 0.12, y: height * 0.75, vx: 0.14, vy: -0.12, rot: 0, rotSpeed: 0.0025, scale: 1.0, color: '#4facfe' }, // Kanban Lean
+                { type: 'dmaic', x: width * 0.5, y: height * 0.88, vx: -0.1, vy: -0.15, rot: 0, rotSpeed: 0.003, scale: 0.95, color: '#10b981' }, // Ciclo DMAIC
+                { type: 'cpm', x: width * 0.48, y: height * 0.15, vx: 0.15, vy: 0.08, rot: 0, rotSpeed: 0.002, scale: 1.0, color: '#00f2fe' }, // Rede CPM / WBS
+                { type: 'pdca', x: width * 0.9, y: height * 0.45, vx: -0.12, vy: 0.12, rot: 0, rotSpeed: 0.005, scale: 1.0, color: '#a855f7' } // Kaizen PDCA
+            ];
+
+            // Funções de desenho vetorial dos símbolos neon
+            function drawSigma(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+                ctx.lineWidth = 2.5;
+
+                // Letra Grega Sigma Maiúsculo (Σ) & σ minúsculo
+                ctx.beginPath();
+                ctx.moveTo(25, -20);
+                ctx.lineTo(-15, -20);
+                ctx.lineTo(8, 0);
+                ctx.lineTo(-15, 20);
+                ctx.lineTo(25, 20);
+                ctx.stroke();
+
+                ctx.font = 'bold 11px "JetBrains Mono", monospace';
+                ctx.fillStyle = color;
+                ctx.fillText('6σ DMAIC', -22, 36);
+                ctx.restore();
+            }
+
+            function drawIronTriangle(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 18;
+                ctx.lineWidth = 2.2;
+
+                // Triângulo de Ferro (Escopo, Tempo, Custo) - PMBOK
+                ctx.beginPath();
+                ctx.moveTo(0, -35);
+                ctx.lineTo(35, 30);
+                ctx.lineTo(-35, 30);
+                ctx.closePath();
+                ctx.stroke();
+
+                // Círculo central da Qualidade
+                ctx.beginPath();
+                ctx.arc(0, 10, 10, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.font = '9px "JetBrains Mono", monospace';
+                ctx.fillStyle = color;
+                ctx.fillText('SCOPE', -15, -42);
+                ctx.fillText('TIME', 38, 35);
+                ctx.fillText('COST', -62, 35);
+                ctx.fillText('QUALITY', -18, 13);
+                ctx.restore();
+            }
+
+            function drawGaussCurve(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 16;
+                ctx.lineWidth = 2.4;
+
+                // Linha de base da distribuição
+                ctx.beginPath();
+                ctx.moveTo(-50, 20);
+                ctx.lineTo(50, 20);
+                ctx.stroke();
+
+                // Curva de Gauss (Sino de Distribuição Normal Six Sigma)
+                ctx.beginPath();
+                ctx.moveTo(-50, 20);
+                ctx.bezierCurveTo(-25, 20, -20, -35, 0, -35);
+                ctx.bezierCurveTo(20, -35, 25, 20, 50, 20);
+                ctx.stroke();
+
+                // Linha central μ (média)
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(0, -35);
+                ctx.lineTo(0, 20);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.font = '9px "JetBrains Mono", monospace';
+                ctx.fillStyle = color;
+                ctx.fillText('-3σ', -35, 32);
+                ctx.fillText('μ', -3, 32);
+                ctx.fillText('+3σ', 22, 32);
+                ctx.fillText('3.4 DPMO', -20, -42);
+                ctx.restore();
+            }
+
+            function drawKanban(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+                ctx.lineWidth = 2;
+
+                // Quadro Kanban com 3 colunas
+                ctx.strokeRect(-35, -25, 70, 50);
+                ctx.beginPath();
+                ctx.moveTo(-12, -25);
+                ctx.lineTo(-12, 25);
+                ctx.moveTo(12, -25);
+                ctx.lineTo(12, 25);
+                ctx.stroke();
+
+                // Cartões WIP
+                ctx.fillStyle = color;
+                ctx.fillRect(-30, -18, 14, 8);
+                ctx.fillRect(-30, -5, 14, 8);
+                ctx.fillRect(-7, -10, 14, 12);
+                ctx.fillRect(17, 0, 14, 8);
+
+                ctx.font = '9px "JetBrains Mono", monospace';
+                ctx.fillText('LEAN KANBAN / WIP', -45, 38);
+                ctx.restore();
+            }
+
+            function drawDMAIC(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+                ctx.lineWidth = 2;
+
+                // Pentágono ou anel de ciclo DMAIC contínuo
+                ctx.beginPath();
+                ctx.arc(0, 0, 24, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Setas indicativas
+                const steps = ['D', 'M', 'A', 'I', 'C'];
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+                    const px = Math.cos(angle) * 24;
+                    const py = Math.sin(angle) * 24;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+
+                    ctx.font = 'bold 9px "JetBrains Mono", monospace';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(steps[i], Math.cos(angle) * 36 - 3, Math.sin(angle) * 36 + 3);
+                }
+
+                ctx.font = '8px "JetBrains Mono", monospace';
+                ctx.fillStyle = color;
+                ctx.fillText('DMAIC CYCLE', -24, 48);
+                ctx.restore();
+            }
+
+            function drawCPM(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 16;
+                ctx.lineWidth = 2;
+
+                // Rede CPM / Diagrama de Precedência PMBOK
+                // Nós
+                ctx.strokeRect(-40, -15, 20, 15);
+                ctx.strokeRect(0, -30, 20, 15);
+                ctx.strokeRect(0, 10, 20, 15);
+                ctx.strokeRect(40, -10, 20, 15);
+
+                // Linhas conectoras (Caminho Crítico)
+                ctx.beginPath();
+                ctx.moveTo(-20, -7.5);
+                ctx.lineTo(0, -22.5);
+                ctx.moveTo(-20, -7.5);
+                ctx.lineTo(0, 17.5);
+                ctx.moveTo(20, -22.5);
+                ctx.lineTo(40, -2.5);
+                ctx.moveTo(20, 17.5);
+                ctx.lineTo(40, -2.5);
+                ctx.stroke();
+
+                ctx.font = '8px "JetBrains Mono", monospace';
+                ctx.fillStyle = color;
+                ctx.fillText('CRITICAL PATH (CPM)', -35, 38);
+                ctx.restore();
+            }
+
+            function drawPDCA(x, y, scale, rot, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+                ctx.scale(scale, scale);
+                ctx.strokeStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 14;
+                ctx.lineWidth = 2.2;
+
+                // Círculo Kaizen de Melhoria Contínua
+                ctx.beginPath();
+                ctx.arc(0, 0, 22, 0, Math.PI * 1.6);
+                ctx.stroke();
+
+                ctx.font = 'bold 9px "JetBrains Mono", monospace';
+                ctx.fillStyle = color;
+                ctx.fillText('KAIZEN', -16, 4);
+                ctx.fillText('PDCA / 5S', -22, 34);
+                ctx.restore();
+            }
+
+            // Loop de animação do Canvas
+            function animateBackground() {
+                ctx.clearRect(0, 0, width, height);
+
+                // 1. Conexões de constelação digital
+                for (let i = 0; i < particles.length; i++) {
+                    const p1 = particles[i];
+                    p1.x += p1.vx;
+                    p1.y += p1.vy;
+
+                    if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+                    if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p1.color;
+                    ctx.shadowColor = p1.color;
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+
+                    // Linhas entre partículas próximas
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                        if (dist < 130) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.strokeStyle = `rgba(0, 242, 254, ${0.15 * (1 - dist / 130)})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // 2. Renderização dos Símbolos Flutuantes
+                symbols.forEach(s => {
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.rot += s.rotSpeed;
+
+                    // Rebater nas bordas da tela
+                    if (s.x < 50 || s.x > width - 50) s.vx *= -1;
+                    if (s.y < 50 || s.y > height - 50) s.vy *= -1;
+
+                    switch (s.type) {
+                        case 'sigma': drawSigma(s.x, s.y, s.scale, s.rot, s.color); break;
+                        case 'triangle': drawIronTriangle(s.x, s.y, s.scale, s.rot, s.color); break;
+                        case 'gauss': drawGaussCurve(s.x, s.y, s.scale, s.rot, s.color); break;
+                        case 'kanban': drawKanban(s.x, s.y, s.scale, s.rot, s.color); break;
+                        case 'dmaic': drawDMAIC(s.x, s.y, s.scale, s.rot, s.color); break;
+                        case 'cpm': drawCPM(s.x, s.y, s.scale, s.rot, s.color); break;
+                        case 'pdca': drawPDCA(s.x, s.y, s.scale, s.rot, s.color); break;
+                    }
+                });
+
+                requestAnimationFrame(animateBackground);
+            }
+            animateBackground();
+        }
+
+        // 5. MOTOR 3D INTERATIVO (THREE.JS) PARA A LINHA DO TEMPO
+        const threeInstances = {};
+
+        function initExperience3D(canvasId, createGeometryCallback) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const width = 140;
+            const height = 140;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+            camera.position.z = 4.2;
+
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Luzes
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0x00f2fe, 2.5, 50);
+            pointLight1.position.set(5, 5, 5);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xe100ff, 2.0, 50);
+            pointLight2.position.set(-5, -5, 3);
+            scene.add(pointLight2);
+
+            const group = new THREE.Group();
+            createGeometryCallback(group, scene);
+            scene.add(group);
+
+            // Interação de arrastar com mouse/touch
+            let isDragging = false;
+            let prevMouseX = 0, prevMouseY = 0;
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                prevMouseX = e.clientX;
+                prevMouseY = e.clientY;
+            });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - prevMouseX;
+                    const deltaY = e.clientY - prevMouseY;
+                    group.rotation.y += deltaX * 0.02;
+                    group.rotation.x += deltaY * 0.02;
+                    prevMouseX = e.clientX;
+                    prevMouseY = e.clientY;
+                }
+            });
+
+            // Touch support
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    prevMouseX = e.touches[0].clientX;
+                    prevMouseY = e.touches[0].clientY;
+                }
+            });
+            window.addEventListener('touchend', () => { isDragging = false; });
+            window.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    const deltaX = e.touches[0].clientX - prevMouseX;
+                    const deltaY = e.touches[0].clientY - prevMouseY;
+                    group.rotation.y += deltaX * 0.02;
+                    group.rotation.x += deltaY * 0.02;
+                    prevMouseX = e.touches[0].clientX;
+                    prevMouseY = e.touches[0].clientY;
+                }
+            });
+
+            return { scene, camera, renderer, group };
+        }
+
+        // Criadores específicos dos modelos 3D dos segmentos industriais:
+        
+        // 1. MV Sistemas: Cruz Holográfica 3D em Saúde Digital & Cubo de Dados em Nuvem
+        function buildMVModel(group) {
+            const matCyan = new THREE.MeshStandardMaterial({ color: 0x00f2fe, roughness: 0.2, metalness: 0.8, wireframe: false });
+            const matWire = new THREE.MeshBasicMaterial({ color: 0x4facfe, wireframe: true });
+
+            // Cruz Médica 3D
+            const vertical = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.8, 0.4), matCyan);
+            const horizontal = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 0.4), matCyan);
+            group.add(vertical);
+            group.add(horizontal);
+
+            // Anéis de fluxo de dados orbitais
+            const ringGeom = new THREE.TorusGeometry(1.4, 0.03, 16, 50);
+            const ring1 = new THREE.Mesh(ringGeom, matWire);
+            ring1.rotation.x = Math.PI / 3;
+            group.add(ring1);
+
+            const ring2 = new THREE.Mesh(ringGeom, new THREE.MeshBasicMaterial({ color: 0xe100ff, wireframe: true }));
+            ring2.rotation.y = Math.PI / 3;
+            group.add(ring2);
+        }
+
+        // 2. Consultor Autônomo: Engrenagens de Engenharia & Matriz de Processos 3D
+        function buildConsultoriaModel(group) {
+            const matPurple = new THREE.MeshStandardMaterial({ color: 0x9333ea, roughness: 0.3, metalness: 0.85 });
+            const matGold = new THREE.MeshStandardMaterial({ color: 0xfbbf24, roughness: 0.3, metalness: 0.9 });
+
+            // Engrenagem Maior
+            const gearGeom = new THREE.CylinderGeometry(0.9, 0.9, 0.25, 12);
+            const gear1 = new THREE.Mesh(gearGeom, matPurple);
+            group.add(gear1);
+
+            // Engrenagem Menor acoplada
+            const gear2 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.3, 8), matGold);
+            gear2.position.set(0.9, 0.7, 0.1);
+            group.add(gear2);
+        }
+
+        // 3. TT Work: Tanque Cilíndrico de Derivados de Petróleo & Barril com Brilho Líquido
+        function buildTTWorkModel(group) {
+            const matSteel = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2, metalness: 0.9 });
+            const matBase = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4, metalness: 0.7 });
+
+            // Tanque Cilíndrico de Combustíveis
+            const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.8, 24), matSteel);
+            group.add(tank);
+
+            // Cúpulas hemisféricas do tanque
+            const domeTop = new THREE.Mesh(new THREE.SphereGeometry(0.8, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), matBase);
+            domeTop.position.y = 0.9;
+            group.add(domeTop);
+
+            // Tubulação e aneis de reforço
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.05, 16, 32), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+            ring.rotation.x = Math.PI / 2;
+            group.add(ring);
+        }
+
+        // 4. Prima Sole Magneti Marelli: Roda Esportiva de Liga Leve Automotiva 3D
+        function buildMarelliModel(group) {
+            const matWheel = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.9 });
+            const matTire = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8, metalness: 0.1 });
+
+            // Pneu
+            const tire = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.35, 16, 36), matTire);
+            group.add(tire);
+
+            // Aro de Liga Leve (Cubo)
+            const rimCenter = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.3, 16), matWheel);
+            rimCenter.rotation.x = Math.PI / 2;
+            group.add(rimCenter);
+
+            // Raios esportivos
+            for (let i = 0; i < 5; i++) {
+                const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.4, 0.15), matWheel);
+                spoke.rotation.z = (i * Math.PI) / 2.5;
+                group.add(spoke);
+            }
+        }
+
+        // 5. Gestamp Wind Steel: Turbina Eólica de Metal Giratória 3D
+        function buildGestampModel(group) {
+            const matTower = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.25, metalness: 0.85 });
+            const matBlade = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.1, metalness: 0.3 });
+
+            // Torre Cônica
+            const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.25, 2.2, 16), matTower);
+            tower.position.y = -0.3;
+            group.add(tower);
+
+            // Nacelle (Cabeçote)
+            const nacelle = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.6), matTower);
+            nacelle.position.set(0, 0.8, 0);
+            group.add(nacelle);
+
+            // Rotor com 3 pás eólicas
+            const rotorGroup = new THREE.Group();
+            rotorGroup.position.set(0, 0.8, 0.35);
+
+            for (let i = 0; i < 3; i++) {
+                const blade = new THREE.Mesh(new THREE.ConeGeometry(0.15, 1.6, 8), matBlade);
+                blade.position.y = 0.8;
+                const bladeHolder = new THREE.Group();
+                bladeHolder.rotation.z = (i * 2 * Math.PI) / 3;
+                bladeHolder.add(blade);
+                rotorGroup.add(bladeHolder);
+            }
+            group.add(rotorGroup);
+            group.rotorRef = rotorGroup; // Referência para rotação contínua da hélice
+        }
+
+        // 6. Ondunorte S/A: Caixa de Papelão Ondulado / Bobina de Celulose 3D
+        function buildOndunorteModel(group) {
+            const matCardboard = new THREE.MeshStandardMaterial({ color: 0xec4899, roughness: 0.7, metalness: 0.15 });
+            const matTape = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.4, metalness: 0.4 });
+
+            // Caixa 3D de Papelão
+            const box = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), matCardboard);
+            group.add(box);
+
+            // Fita de Embalagem / Lacrada
+            const tapeH = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.25, 1.42), matTape);
+            group.add(tapeH);
+
+            const tapeV = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.42, 1.42), matTape);
+            group.add(tapeV);
+        }
+
+        // Loop de Renderização dos Modelos 3D
+        function startAll3D() {
+            threeInstances.mv = initExperience3D('canvas-mv', buildMVModel);
+            threeInstances.consultoria = initExperience3D('canvas-consultoria', buildConsultoriaModel);
+            threeInstances.ttwork = initExperience3D('canvas-ttwork', buildTTWorkModel);
+            threeInstances.marelli = initExperience3D('canvas-marelli', buildMarelliModel);
+            threeInstances.gestamp = initExperience3D('canvas-gestamp', buildGestampModel);
+            threeInstances.ondunorte = initExperience3D('canvas-ondunorte', buildOndunorteModel);
+
+            function renderLoop() {
+                requestAnimationFrame(renderLoop);
+
+                Object.keys(threeInstances).forEach(key => {
+                    const inst = threeInstances[key];
+                    if (inst) {
+                        // Rotação suave contínua quando ocioso
+                        inst.group.rotation.y += 0.015;
+                        inst.group.rotation.x += 0.005;
+
+                        // Se for a turbina eólica da Gestamp, gira as hélices rapidamente
+                        if (inst.group.rotorRef) {
+                            inst.group.rotorRef.rotation.z += 0.06;
+                        }
+
+                        inst.renderer.render(inst.scene, inst.camera);
+                    }
+                });
+            }
+            renderLoop();
+        }
+
+        // 5. DICIONÁRIO MULTILÍNGUE (8 IDIOMAS)
+        const i18n = {
+            pt: {
+                nav_role: "Especialista em Processos", nav_summary: "Resumo", nav_metrics: "Métricas", nav_skills: "Competências", nav_exp: "Trajetória 3D", nav_edu: "Formação", btn_connect: "Conectar",
+                badge_availability: "Disponível para Liderança & Projetos Estratégicos", hero_title_1: "Especialista em Processos", hero_title_2: "Engenheiro de Produção",
+                hero_bio: "Engenheiro de Produção e Especialista em Processos com sólida trajetória na otimização de fluxos operacionais, eficiência de processos e transformação digital. Experiência de destaque na condução de projetos estratégicos de melhoria contínua, governança de processos e implementação de ecossistemas corporativos de tecnologia.",
+                label_location: "Localização", label_email: "E-mail Direto", label_phone: "Telefone / Copiar",
+                sec_metrics_sub: "Impacto Mensurável", sec_metrics_title: "Resultados & Indicadores de Desempenho",
+                m1_title: "Aumento de Produtividade", m1_desc: "Conquistado na montagem de componentes estruturais sob o programa WCM (Prima Sole Magneti Marelli).",
+                m2_title: "Eliminação de Retrabalho", m2_desc: "Redesenho do fluxo fabril de transformação de artigos em couro na linha de produção industrial.",
+                m3_title: "Assertividade Operacional", m3_desc: "Alcançado nos leilões de biodiesel Petrobras na TT Work com taxa ZERO de multas.",
+                m4_title: "Acidentes de Trabalho", m4_desc: "Marca mantida durante a liderança operacional de 88 colaboradores na Gestamp Wind Steel.",
+                m5_title: "Redução de Perdas", m5_desc: "Redução nas perdas de materiais no almoxarifado combinada com +17% de ganho de produtividade.",
+                m6_title: "Disponibilidade Fabril", m6_desc: "Alcançada na conversão e 70% nas máquinas de papel da Ondunorte, eliminando 95% do retrabalho.",
+                sec_skills_sub: "Saber Fazer & Domínio", sec_skills_title: "Competências & Conhecimentos Chave",
+                sk1_title: "Gestão de Processos (BPM)", sk1_desc: "Mapeamento End-to-End, Modelagem de Fluxos, Indicadores de Desempenho (KPIs), Governança e Padronização.",
+                sk2_title: "Transformação Digital", sk2_desc: "Salesforce (Projeto NEXUS), SAP, TOTVS, MES e Pacote MS Office Avançado.",
+                sk3_title: "Melhoria Contínua & Lean", sk3_desc: "Lean Six Sigma (Green Belt), WCM, TPM, Kaizen, Kanban, 5S e Matriz de Riscos.",
+                sk4_title: "Projetos & Pessoas", sk4_desc: "Metodologias Ágeis, PMBOK (Práticas PMI), Liderança de Equipes e Gestão da Mudança.",
+                sec_exp_sub: "Histórico Profissional", sec_exp_title: "Trajetória e Atuação Técnica",
+                exp1_desc: "Revisão, otimização e governança de processos operacionais e de negócios. Key User do Projeto NEXUS (Salesforce). Mapeamento de jornadas de clientes, mitigação de gargalos e padronização operacional.",
+                exp2_desc: "Estruturação e implantação de gestão de materiais em Construção Civil. Mapeamento de fluxos de decisão e indicadores em Serviços/Tecnologia. Redesenho fabril em Indústria de Calçados/Couro eliminando 30% de retrabalho.",
+                exp3_desc: "Gestão de estoques e orquestração logística de combustíveis e biocombustíveis. Arremate em leilões de biodiesel Petrobras com >95% de assertividade e taxa ZERO de multas.",
+                exp4_desc: "Liderança de 100 colaboradores sob o programa WCM. Aumento de 40% na produtividade e redução de 25% no índice de refugo. Implementação de fluxos Milk Run, JIS e JIT.",
+                exp5_desc: "Gestão operacional de 88 colaboradores. Implementação de Kanban e Mizusumashi (+17% produtividade, -40% perdas). Marca histórica de ZERO acidentes de trabalho.",
+                exp6_desc: "Coordenação de PCP, estoques e auditoria do ERP. Elevação da disponibilidade fabril para 85% na conversão e 70% nas máquinas de papel. Eliminação de 95% do retrabalho interno.",
+                sec_edu_sub: "Qualificação Profissional", sec_edu_title: "Formação Acadêmica & Certificações",
+                edu1_desc: "ABPMP International — Em preparação (Previsão 2027)",
+                footer_title: "Pronto para Elevar a Eficiência dos Seus Processos?", footer_desc: "Entre em contato para discutir oportunidades de liderança de processos, governança operacional ou projetos de transformação digital.", toast_copied: "Informações de contato copiadas!"
+            },
+            en: {
+                nav_role: "Process Specialist", nav_summary: "Summary", nav_metrics: "Metrics", nav_skills: "Skills", nav_exp: "3D Journey", nav_edu: "Education", btn_connect: "Connect",
+                badge_availability: "Available for Executive Leadership & Strategic Projects", hero_title_1: "Process Specialist", hero_title_2: "Industrial Engineer",
+                hero_bio: "Industrial Engineer and Process Specialist with a solid track record in operational flow optimization, process efficiency, and digital transformation. Outstanding experience leading continuous improvement, process governance, and corporate tech ecosystem deployments.",
+                label_location: "Location", label_email: "Direct Email", label_phone: "Phone / Copy",
+                sec_metrics_sub: "Measurable Impact", sec_metrics_title: "Results & Key Performance Indicators",
+                m1_title: "Productivity Increase", m1_desc: "Achieved in structural component assembly under WCM framework (Prima Sole Magneti Marelli).",
+                m2_title: "Rework Elimination", m2_desc: "Redesign of leather article manufacturing workflow eliminating 30% rework on the production line.",
+                m3_title: "Operational Accuracy", m3_desc: "Achieved in Petrobras biodiesel auctions at TT Work with ZERO penalty fees.",
+                m4_title: "Workplace Safety", m4_desc: "Zero lost-time injury record while leading 88 operational team members at Gestamp Wind Steel.",
+                m5_title: "Inventory Waste Reduction", m5_desc: "Warehouse material loss reduction combined with +17% productivity gain using Kanban & Mizusumashi.",
+                m6_title: "Plant Availability", m6_desc: "Reached 85% availability in converting lines and 70% in paper machines at Ondunorte.",
+                sec_skills_sub: "Core Expertise", sec_skills_title: "Key Skills & Domain",
+                sk1_title: "Process Management (BPM)", sk1_desc: "End-to-End Mapping, Workflow Modeling, Key Performance Indicators (KPIs), Governance & Standardization.",
+                sk2_title: "Digital Transformation", sk2_desc: "Salesforce (NEXUS Project), SAP, TOTVS, MES, and Advanced MS Office.",
+                sk3_title: "Continuous Improvement & Lean", sk3_desc: "Lean Six Sigma (Green Belt), WCM, TPM, Kaizen, Kanban, 5S, and Risk Matrix.",
+                sk4_title: "Project & Team Leadership", sk4_desc: "Agile Methodologies, PMBOK (PMI Practices), Cross-Functional Team Leadership, Change Management.",
+                sec_exp_sub: "Professional Record", sec_exp_title: "Career & Technical Path",
+                exp1_desc: "Review and governance of business processes. Key User in Salesforce NEXUS Project deployment. Customer journey mapping.",
+                exp2_desc: "Consulting in Construction, Tech Services, and Leather Manufacturing (-30% rework).",
+                exp3_desc: "Fuel inventory & logistics management. Petrobras biodiesel auctions with >95% accuracy and zero fines.",
+                exp4_desc: "Led 100 operators in WCM. Achieved +40% productivity and 25% scrap reduction. JIS & JIT flows.",
+                exp5_desc: "Led 88 workers. Implemented Kanban/Mizusumashi (+17% productivity, -40% waste). ZERO accidents.",
+                exp6_desc: "PCP & ERP audit coordination. Raised plant availability to 85% and eliminated 95% internal rework.",
+                sec_edu_sub: "Professional Qualifications", sec_edu_title: "Education & Certifications",
+                edu1_desc: "ABPMP International — Preparation in progress (Target 2027)",
+                footer_title: "Ready to Elevate Your Process Efficiency?", footer_desc: "Get in touch to discuss opportunities in process leadership, operational governance, or digital transformation.", toast_copied: "Contact details copied to clipboard!"
+            },
+            es: {
+                nav_role: "Especialista en Procesos", nav_summary: "Resumen", nav_metrics: "Métricas", nav_skills: "Competencias", nav_exp: "Trayectoria 3D", nav_edu: "Educación", btn_connect: "Conectar",
+                badge_availability: "Disponible para Liderazgo y Proyectos Estratégicos", hero_title_1: "Especialista en Procesos", hero_title_2: "Ingeniero de Producción",
+                hero_bio: "Ingeniero de Producción y Especialista en Procesos con sólida trayectoria en optimización de flujos operacionales, eficiencia de procesos y transformación digital.",
+                label_location: "Ubicación", label_email: "Correo Directo", label_phone: "Teléfono / Copiar",
+                sec_metrics_sub: "Impacto Medible", sec_metrics_title: "Resultados e Indicadores de Rendimiento",
+                m1_title: "Aumento de Productividad", m1_desc: "Conseguido en el ensamblaje de componentes bajo el programa WCM.",
+                m2_title: "Eliminación de Reprocesos", m2_desc: "Rediseño del flujo industrial del cuero eliminando 30% de reprocesos.",
+                m3_title: "Precisión Operativa", m3_desc: "Alcanzado en subastas de biodiesel con CERO multas.",
+                m4_title: "Accidentes de Trabajo", m4_desc: "ZERO accidentes liderando a 88 colaboradores.",
+                m5_title: "Reducción de Pérdidas", m5_desc: "Reducción de pérdidas en almacén combinada con +17% en productividad.",
+                m6_title: "Disponibilidad de Planta", m6_desc: "Alcanzada 85% en conversión y 70% en máquinas de papel.",
+                sec_skills_sub: "Dominio Técnico", sec_skills_title: "Competencias Clave",
+                sk1_title: "Gestión de Procesos (BPM)", sk1_desc: "Mapeo End-to-End, Modelado de Procesos, KPIs y Gobernanza.",
+                sk2_title: "Transformación Digital", sk2_desc: "Salesforce (Proyecto NEXUS), SAP, TOTVS, MES.",
+                sk3_title: "Mejora Continua & Lean", sk3_desc: "Lean Six Sigma Green Belt, WCM, TPM, Kaizen, Kanban, 5S.",
+                sk4_title: "Proyectos y Personas", sk4_desc: "Metodologías Ágiles, Prácticas PMBOK, Liderazgo de Equipos.",
+                sec_exp_sub: "Historial Profesional", sec_exp_title: "Trayectoria y Experiencia",
+                exp1_desc: "Gobernanza de procesos y Key User en Proyecto NEXUS Salesforce.",
+                exp2_desc: "Proyectos de consultoría con reducción del 30% en reprocesos.",
+                exp3_desc: "Planificación de logística y leilões de biodiesel Petrobras con zero multas.",
+                exp4_desc: "Liderazgo de 100 operarios bajo programa WCM (+40% productividad).",
+                exp5_desc: "Liderazgo de 88 operarios e implementación Kanban (ZERO accidentes).",
+                exp6_desc: "Coordinación de PCP y ERP con 85% de disponibilidad fabril.",
+                sec_edu_sub: "Cualificación Profesional", sec_edu_title: "Formación y Certificaciones",
+                edu1_desc: "ABPMP International — En preparación (2027)",
+                footer_title: "¿Listo para Elevar la Eficiencia de sus Procesos?", footer_desc: "Contácteme para conversar sobre oportunidades de liderazgo de procesos.", toast_copied: "¡Contacto copiado al portapapeles!"
+            },
+            it: {
+                nav_role: "Specialista di Processi", nav_summary: "Riepilogo", nav_metrics: "Metriche", nav_skills: "Competenze", nav_exp: "Percorso 3D", nav_edu: "Formazione", btn_connect: "Connetti",
+                badge_availability: "Disponibile per Leadership & Progetti Strategici", hero_title_1: "Specialista di Processi", hero_title_2: "Ingegnere Gestionale",
+                hero_bio: "Ingegnere Gestionale e Specialista di Processi con solida esperienza nell'ottimizzazione dei flussi operativi e trasformazione digitale.",
+                label_location: "Posizione", label_email: "Email Diretta", label_phone: "Telefono / Copia",
+                sec_metrics_sub: "Impatto Misurabile", sec_metrics_title: "Risultati e Indicatori di Performance",
+                m1_title: "Aumento di Produttività", m1_desc: "Ottenuto nell'assemblaggio componenti sotto il programma WCM.",
+                m2_title: "Eliminazione dei Rilavori", m2_desc: "Riprogettazione del flusso di produzione pelle (-30% rilavori).",
+                m3_title: "Accuratezza Operativa", m3_desc: "Aste di biodiesel Petrobras con ZERO sanzioni.",
+                m4_title: "Sicurezza sul Lavoro", m4_desc: "Record ZERO infortuni alla guida di 88 collaboratori.",
+                m5_title: "Riduzione delle Perdite", m5_desc: "Riduzione perdite di magazzino e +17% produttività.",
+                m6_title: "Disponibilità Impianto", m6_desc: "85% nelle linee di conversione e 70% macchine carta.",
+                sec_skills_sub: "Competenze Chiave", sec_skills_title: "Aree di Dominio",
+                sk1_title: "Gestione Processi (BPM)", sk1_desc: "Mappatura End-to-End, Modellazione Flussi, KPI e Governance.",
+                sk2_title: "Trasformazione Digitale", sk2_desc: "Salesforce (Progetto NEXUS), SAP, TOTVS, MES.",
+                sk3_title: "Miglioramento Continuo & Lean", sk3_desc: "Lean Six Sigma Green Belt, WCM, TPM, Kaizen, Kanban, 5S.",
+                sk4_title: "Progetti e Persone", sk4_desc: "Metodologie Agili, PMBOK, Leadership di Team Multidisciplinari.",
+                sec_exp_sub: "Esperienze Professionali", sec_exp_title: "Percorso di Carriera",
+                exp1_desc: "Revisione processi e Key User per il progetto NEXUS Salesforce.",
+                exp2_desc: "Consulenza indipendente per ottimizzazione dei flussi industriali.",
+                exp3_desc: "Pianificazione logistica e aste biodiesel con massima precisione.",
+                exp4_desc: "Gestione di 100 collaboratori in ambiente WCM (+40% produttività).",
+                exp5_desc: "Gestione di 88 operatori industriali con record ZERO infortuni.",
+                exp6_desc: "Coordinamento PCP ed ERP con 85% disponibilità impianto.",
+                sec_edu_sub: "Qualifiche Professionali", sec_edu_title: "Formazione & Certificazioni",
+                edu1_desc: "ABPMP International — In preparazione (2027)",
+                footer_title: "Pronto ad Elevare l'Efficienza dei Tuoi Processi?", footer_desc: "Contattami per discutere opportunità di leadership nei processi.", toast_copied: "Contatto copiato negli appunti!"
+            },
+            fr: {
+                nav_role: "Spécialiste des Processus", nav_summary: "Résumé", nav_metrics: "Métrique", nav_skills: "Compétences", nav_exp: "Parcours 3D", nav_edu: "Formation", btn_connect: "Connecter",
+                badge_availability: "Disponible pour Leadership & Projets Stratégiques", hero_title_1: "Spécialiste des Processus", hero_title_2: "Ingénieur de Production",
+                hero_bio: "Ingénieur de Production et Spécialiste des Processus avec une solide trajectoire dans l'optimisation des flux opérationnels.",
+                label_location: "Localisation", label_email: "E-mail Direct", label_phone: "Téléphone / Copier",
+                sec_metrics_sub: "Impact Mesurable", sec_metrics_title: "Résultats & Indicateurs de Performance",
+                m1_title: "Hausse de Productivité", m1_desc: "Obtenu lors de l'assemblage de composants WCM.",
+                m2_title: "Élimination des Retouches", m2_desc: "Refonte du flux industriel du cuir (-30% de retouches).",
+                m3_title: "Précision Opérationnelle", m3_desc: "Enchères biodiesel avec ZÉRO pénalité.",
+                m4_title: "Sécurité au Travail", m4_desc: "ZÉRO accident de travail en encadrant 88 collaborateurs.",
+                m5_title: "Réduction des Pertes", m5_desc: "Baisse des pertes en stock et +17% de productivité.",
+                m6_title: "Disponibilité de l'Usine", m6_desc: "85% en transformation et 70% sur les machines à papier.",
+                sec_skills_sub: "Domaines d'Expertise", sec_skills_title: "Compétences Clés",
+                sk1_title: "Gestion des Processus (BPM)", sk1_desc: "Cartographie End-to-End, Modélisation, KPIs et Gouvernance.",
+                sk2_title: "Transformation Digitale", sk2_desc: "Salesforce (Projet NEXUS), SAP, TOTVS, MES.",
+                sk3_title: "Amélioration Continue & Lean", sk3_desc: "Lean Six Sigma Green Belt, WCM, TPM, Kaizen, Kanban, 5S.",
+                sk4_title: "Projets & Management", sk4_desc: "Méthodes Agiles, PMBOK, Management d'équipes pluridisciplinaires.",
+                sec_exp_sub: "Parcours Professionnel", sec_exp_title: "Expérience Technique",
+                exp1_desc: "Gouvernance des processus et Key User projet NEXUS Salesforce.",
+                exp2_desc: "Conseil en optimisation des processus industriels et de services.",
+                exp3_desc: "Planification logistique et gestion des enchères biodiesel.",
+                exp4_desc: "Encadrement de 100 collaborateurs WCM (+40% de productivité).",
+                exp5_desc: "Management de 88 opérateurs avec ZÉRO accident du travail.",
+                exp6_desc: "Coordination PCP et ERP avec hausse de la disponibilité usine.",
+                sec_edu_sub: "Qualifications", sec_edu_title: "Formation & Certifications",
+                edu1_desc: "ABPMP International — En préparation (2027)",
+                footer_title: "Prêt à Optimiser vos Processus ?", footer_desc: "Contactez-moi pour échanger sur des projets de gouvernance opérationnelle.", toast_copied: "Coordonnées copiées !"
+            },
+            ar: {
+                nav_role: "خبير عمليات", nav_summary: "ملخص", nav_metrics: "المؤشرات", nav_skills: "المهارات", nav_exp: "المسار ثلاثي الأبعاد", nav_edu: "التعليم", btn_connect: "تواصل",
+                badge_availability: "متاح للقيادة التنفيذية والمشاريع الاستراتيجية", hero_title_1: "أخصائي تحسين العمليات", hero_title_2: "مهندس إنتاج",
+                hero_bio: "مهندس إنتاج وخبير عمليات مع سجل حافل في تحسين التدفقات التشغيلية، رفع كفاءة العمليات، والتحول الرقمي.",
+                label_location: "الموقع", label_email: "البريد الإلكتروني", label_phone: "الهاتف / نسخ",
+                sec_metrics_sub: "تأثير قابل للقياس", sec_metrics_title: "النتائج ومؤشرات الأداء الرئيسية",
+                m1_title: "زيادة الإنتاجية", m1_desc: "تحقيق زيادة بنسبة 40% في تجميع المكونات تحت برنامج التصنيع العالمي WCM.",
+                m2_title: "إلغاء إعادة العمل", m2_desc: "إعادة تصميم خطوط الإنتاج وتقليل إعادة العمل بنسبة 30%.",
+                m3_title: "الدقة التشغيلية", m3_desc: "تحقيق نسبة دقة أعلى من 95% في مزادات الوقود الحيوي مع صفر غرامات.",
+                m4_title: "السلامة المهنية", m4_desc: "سجل خالي تماماً من حوادث العمل لـ 88 موظفاً في Gestamp Wind Steel.",
+                m5_title: "تقليل هدر المخزون", m5_desc: "تقليل الفاقد في المستودعات بنسبة 40% مع زيادة الإنتاجية بـ 17%.",
+                m6_title: "جاهزية المصنع", m6_desc: "الوصول إلى 85% في خطوط التحويل و70% في آلات الورق.",
+                sec_skills_sub: "الخبرات الأساسية", sec_skills_title: "المهارات والتخصصات",
+                sk1_title: "إدارة العمليات (BPM)", sk1_desc: "رسم الخرائط الشاملة، نمذجة العمليات، مؤشرات الأداء وحوكمة العمليات.",
+                sk2_title: "التحول الرقمي", sk2_desc: "Salesforce (مشروع NEXUS)، SAP، TOTVS، وأنظمة MES.",
+                sk3_title: "التحسين المستمر والإنتاج الرشيق", sk3_desc: "Lean Six Sigma Green Belt، WCM، TPM، Kaizen، و Kanban.",
+                sk4_title: "إدارة المشاريع والفرق", sk4_desc: "منهجيات Agile، ممارسات PMBOK، وقيادة الفرق متعددة التخصصات.",
+                sec_exp_sub: "السجل المهني", sec_exp_title: "الخبرة الميدانية والتطبيقية",
+                exp1_desc: "مراجعة وحوكمة العمليات ومستخدم رئيسي لمشروع Salesforce NEXUS.",
+                exp2_desc: "استشارات أداء وتطوير العمليات في عدة قطاعات صناعية وخدمية.",
+                exp3_desc: "إدارة اللوجستيات والمخزون ومزادات الوقود الحيوي بدون غرامات.",
+                exp4_desc: "قيادة 100 موظف تحت نظام WCM مع زيادة الإنتاجية بنسبة 40%.",
+                exp5_desc: "إدارة 88 فني وإعادة تنظيم خطوط الإمداد بنسبة حوادث صفريـة.",
+                exp6_desc: "تنسيق خطط الإنتاج وأنظمة ERP مع رفع كفاءة التشغيل لـ 85%.",
+                sec_edu_sub: "المؤهلات العلمية", sec_edu_title: "الشهادات والتعليم أكاديمي",
+                edu1_desc: "ABPMP International — قيد التحضير (2027)",
+                footer_title: "هل أنت مستعد لرفع كفاءة عملياتك؟", footer_desc: "تواصل معي لمناقشة فرص القيادة التشغيلية والتحول الرقمي.", toast_copied: "تم نسخ بيانات الاتصال!"
+            },
+            ru: {
+                nav_role: "Специалист по процессам", nav_summary: "Резюме", nav_metrics: "Метрики", nav_skills: "Навыки", nav_exp: "3D Путь", nav_edu: "Образование", btn_connect: "Связаться",
+                badge_availability: "Доступен для руководства и стратегических проектов", hero_title_1: "Специалист по процессам", hero_title_2: "Инженер производства",
+                hero_bio: "Инженер производства и специалист по процессам с богатым опытом оптимизации операционных потоков и цифровой трансформации.",
+                label_location: "Локация", label_email: "Прямой Email", label_phone: "Телефон / Копия",
+                sec_metrics_sub: "Измеримый результат", sec_metrics_title: "Результаты и показатели эффективности",
+                m1_title: "Рост производительности", m1_desc: "Достигнуто при сборке компонентов по программе WCM.",
+                m2_title: "Устранение переделок", m2_desc: "Оптимизация производства с сокращением брака на 30%.",
+                m3_title: "Точность операций", m3_desc: "Более 95% точности в аукционах биодизеля Petrobras с НУЛЕВЫМИ штрафами.",
+                m4_title: "Безопасность труда", m4_desc: "НОЛЬ несчастных случаев при руководстве 88 сотрудниками.",
+                m5_title: "Сокращение потерь", m5_desc: "Снижение потерь на складе на 40% и рост производительности на 17%.",
+                m6_title: "Готовность оборудования", m6_desc: "Достигнуто 85% в переработке и 70% на бумагоделательных машинах.",
+                sec_skills_sub: "Ключевая Экспертиза", sec_skills_title: "Навыки и Компетенции",
+                sk1_title: "Управление процессами (BPM)", sk1_desc: "End-to-End картирование, моделирование потоков, KPI и стандартизация.",
+                sk2_title: "Цифровая трансформация", sk2_desc: "Salesforce (проект NEXUS), SAP, TOTVS, системы MES.",
+                sk3_title: "Бережливое производство (Lean)", sk3_desc: "Lean Six Sigma Green Belt, WCM, TPM, Kaizen, Kanban, 5S.",
+                sk4_title: "Управление проектами и людьми", sk4_desc: "Agile, практики PMBOK, руководство кросс-функциональными командами.",
+                sec_exp_sub: "Профессиональный опыт", sec_exp_title: "Карьерный путь",
+                exp1_desc: "Оптимизация процессов и роль Key User в проекте Salesforce NEXUS.",
+                exp2_desc: "Консалтинг по оптимизации производства и сокращению издержек.",
+                exp3_desc: "Логистика топлива и участие в аукционах Petrobras с высокой точностью.",
+                exp4_desc: "Руководство 100 сотрудниками по системе WCM (+40% к производительности).",
+                exp5_desc: "Управление 88 сотрудниками с соблюдением стандартов безопасности.",
+                exp6_desc: "Координация планирования производства и работы в ERP.",
+                sec_edu_sub: "Квалификация", sec_edu_title: "Образование и сертификаты",
+                edu1_desc: "ABPMP International — Подготовка к экзамену (2027)",
+                footer_title: "Готовы повысить эффективность ваших процессов?", footer_desc: "Свяжитесь со мной для обсуждения операционного управления.", toast_copied: "Контакты скопированы!"
+            },
+            zh: {
+                nav_role: "流程管理专家", nav_summary: "摘要", nav_metrics: "指标", nav_skills: "技能", nav_exp: "3D履历", nav_edu: "教育", btn_connect: "联系",
+                badge_availability: "可胜任管理与战略项目领导", hero_title_1: "流程管理专家", hero_title_2: "生产工程专家",
+                hero_bio: "生产工程专家与流程管理专家，在业务流程优化、运营效率提升及数字化转型方面拥有深厚背景与卓越成就。",
+                label_location: "位置", label_email: "直接邮箱", label_phone: "电话 / 复制",
+                sec_metrics_sub: "可衡量的影响", sec_metrics_title: "成果与关键绩效指标 (KPI)",
+                m1_title: "生产力提升", m1_desc: "在 WCM 世界级制造体系下实现组件装配效率提升 40%。",
+                m2_title: "消除返工", m2_desc: "重新设计皮革加工生产流程，减少 30% 返工率。",
+                m3_title: "运营精准度", m3_desc: "在 Petrobras 生物柴油竞标中达到 95% 以上精准度且零罚款。",
+                m4_title: "安全生产", m4_desc: "带领 Gestamp Wind Steel 88 名员工实现零工伤事故纪录。",
+                m5_title: "减少库存损耗", m5_desc: "仓库物料损耗减少 40%，配合 Kanban 提升 17% 生产力。",
+                m6_title: "设备可用率", m6_desc: "在 Ondunorte 实现纸机可用率 70%，加工线可用率 85%。",
+                sec_skills_sub: "核心专业知识", sec_skills_title: "关键技能与领域",
+                sk1_title: "业务流程管理 (BPM)", sk1_desc: "端到端流程梳理、流程建模、KPI 指标设计及标准化治理。",
+                sk2_title: "数字化转型", sk2_desc: "Salesforce (NEXUS 项目)、SAP、TOTVS、MES 及高级 MS Office。",
+                sk3_title: "精益生产与持续改进", sk3_desc: "六西格玛绿带 (Green Belt)、WCM、TPM、Kaizen、Kanban 及 5S 现场管理。",
+                sk4_title: "项目与团队领导力", sk4_desc: "敏捷开发 (Agile)、PMBOK 项目管理体系、跨部门团队领导及变更管理。",
+                sec_exp_sub: "职业履历", sec_exp_title: "工作经历与技术实践",
+                exp1_desc: "MV Sistemas 流程治理及 Salesforce NEXUS 项目核心用户 (Key User)。",
+                exp2_desc: "独立管理咨询，涵盖建筑、技术服务及皮革制造业（返工率降低 30%）。",
+                exp3_desc: "TT Work 燃油库存与物流调度，Petrobras 生物柴油竞标准确率 >95%。",
+                exp4_desc: "Prima Sole 管理 100 名员工，WCM 体系下生产力提升 40%，废品率降低 25%。",
+                exp5_desc: "Gestamp 管理 88 名员工，导入 Kanban/Mizusumashi，实现零安全事故。",
+                exp6_desc: "Ondunorte 生产计划与 ERP 审计，提高设备可用率至 85%。",
+                sec_edu_sub: "专业资格", sec_edu_title: "教育背景与资格认证",
+                edu1_desc: "ABPMP International — CBPP 备考中（预计 2027 年）",
+                footer_title: "准备好提升您的业务流程效率了吗？", footer_desc: "欢迎联系探讨流程领导力、运营治理及数字化转型合作。", toast_copied: "联系方式已复制到剪贴板！"
+            }
+        };
+
+        // 6. Função de Troca Dinâmica de Idiomas
+        function mudarIdioma(lang) {
+            if (!i18n[lang]) return;
+
+            // Suporte RTL para o Árabe
+            if (lang === 'ar') {
+                document.documentElement.setAttribute('dir', 'rtl');
+            } else {
+                document.documentElement.removeAttribute('dir');
+            }
+
+            // Atualização de todos os elementos traduzíveis
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) {
+                    el.textContent = i18n[lang][key];
+                }
+            });
+
+            // Atualização dos botões visuais
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('bg-cyan-500', 'text-black', 'shadow-xs');
+                btn.classList.add('text-gray-300');
+            });
+
+            const activeBtn = document.getElementById(`btn-lang-${lang}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-300');
+                activeBtn.classList.add('bg-cyan-500', 'text-black', 'shadow-xs');
+            }
+        }
+
+        // Inicialização do Three.js e idioma padrão no carregamento da página
+        window.onload = function() {
+            initFuturisticBackground();
+            startAll3D();
+            mudarIdioma('pt');
+        };
+    </script>
+</body>
+</html>
